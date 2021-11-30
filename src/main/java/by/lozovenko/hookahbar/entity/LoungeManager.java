@@ -13,11 +13,13 @@ public class LoungeManager {
     private static final Logger LOGGER = LogManager.getLogger();
     private static LoungeManager instance;
     private final HookahLounge hookahLounge;
+    private int managerId;
     private static AtomicBoolean isCreated = new AtomicBoolean(false);
     private static Lock lock = new ReentrantLock(true);
 
-    private LoungeManager(HookahLounge hookahLounge) {
+    public LoungeManager(HookahLounge hookahLounge, int managerId) {
         this.hookahLounge = hookahLounge;
+        this.managerId = managerId;
     }
 
     public static LoungeManager getInstance() {
@@ -62,7 +64,7 @@ public class LoungeManager {
         if (!isInsideQueueEmpty) {
             ClientGroup firstInQueueGroup = insideWaitingQueue.poll();
             serveClientGroup(firstInQueueGroup);
-            LOGGER.log(Level.INFO, "Manager put group #{} into inside queue.", firstInQueueGroup.getClientGroupId());
+            LOGGER.log(Level.INFO, "Manager polls group #{} from inside queue.", firstInQueueGroup.getClientGroupId());
         }
     }
 }
