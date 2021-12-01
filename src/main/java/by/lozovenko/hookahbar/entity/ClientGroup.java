@@ -21,12 +21,12 @@ public class ClientGroup implements Runnable {
         HookahLounge lounge = HookahLounge.getInstance();
         LoungeManager loungeManager = lounge.callManager();
         loungeManager.serveClientGroup(this);
-        if (state == ClientGroupState.WAITING_INSIDE){
-
-        }
-        if (state == ClientGroupState.WAITING_OUTSIDE){
-
-        }
+//        if (state == ClientGroupState.WAITING_INSIDE){
+//
+//        }
+//        if (state == ClientGroupState.WAITING_OUTSIDE){
+//
+//        }
     }
 
     public int getClientGroupId() {
@@ -43,5 +43,15 @@ public class ClientGroup implements Runnable {
 
     public void setState(ClientGroupState state) {
         this.state = state;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ClientGroup{");
+        sb.append("clientGroupId=").append(clientGroupId);
+        sb.append(", relaxTime=").append(relaxTime);
+        sb.append(", state=").append(state);
+        sb.append('}');
+        return sb.toString();
     }
 }

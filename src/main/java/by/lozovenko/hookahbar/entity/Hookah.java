@@ -25,20 +25,21 @@ public class Hookah{
         return hookahId;
     }
 
-    public void serveClientGroup(ClientGroup clientGroup){
+    public void serveClientGroup(ClientGroup clientGroup, LoungeManager manager){
         int relaxTime = clientGroup.getRelaxTime();
         try {
             isBusy.set(true);
             clientGroup.setState(ClientGroupState.SMOKING);
             TimeUnit.SECONDS.sleep(relaxTime);
-            LOGGER.log(Level.INFO, "Group #{}" );
+            LOGGER.log(Level.INFO, "Group #{} served by manager #{} at hookah #{}",
+                    clientGroup.getClientGroupId(), manager.getManagerId(), hookahId );
         }catch (InterruptedException e){
-            LOGGER.log(Level.ERROR, "Thread interrupt exception while sleeping: ", e);
+            LOGGER.log(Level.ERROR, "Thread interrupt exception while sleeping in serveClientGroup: ", e);
         }finally {
             isBusy.set(false);
             clientGroup.setState(ClientGroupState.SERVED);
-            LoungeManager manager = LoungeManager.getInstance();
-            manager.checkWaitingLines();
+            LOGGER.log(Level.INFO, "Group #{} leave hookah lounge", clientGroup.getClientGroupId());
+            manager.checkWaitingLines();  //FIXME не раскидывает по очередям
         }
     }
 }

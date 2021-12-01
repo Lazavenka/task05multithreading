@@ -5,42 +5,28 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class LoungeManager {
     private static final Logger LOGGER = LogManager.getLogger();
     private static LoungeManager instance;
     private final HookahLounge hookahLounge;
     private int managerId;
-    private static AtomicBoolean isCreated = new AtomicBoolean(false);
-    private static Lock lock = new ReentrantLock(true);
+
 
     public LoungeManager(HookahLounge hookahLounge, int managerId) {
         this.hookahLounge = hookahLounge;
         this.managerId = managerId;
     }
 
-    public static LoungeManager getInstance() {
-        if (!isCreated.get()) {
-            try {
-                lock.lock();
-                if (instance == null) {
-                    instance = new LoungeManager(HookahLounge.getInstance());
-                }
-            } finally {
-                lock.unlock();
-            }
-        }
-        return instance;
+    public int getManagerId() {
+        return managerId;
     }
 
     public void serveClientGroup(ClientGroup clientGroup) {
         Optional<Hookah> optionalFreeHookah = hookahLounge.getFreeHookah();
         optionalFreeHookah.ifPresentOrElse(hookah -> {
-            hookah.serveClientGroup(clientGroup);
-            LOGGER.log(Level.INFO, "Manager find free hookah #{}.", hookah.getHookahId());
+            hookah.serveClientGroup(clientGroup, this);
+            LOGGER.log(Level.INFO, "Manager #{} find free hookah #{}.",managerId ,hookah.getHookahId());
         }, () -> putClientGroupInLine(clientGroup));
     }
 
@@ -50,21 +36,39 @@ public class LoungeManager {
         if (insideQueueFreePlaces > 0) {
             insideWaitingQueue.offer(clientGroup);
             clientGroup.setState(ClientGroupState.WAITING_INSIDE);
-            LOGGER.log(Level.INFO, "Manager put group #{} into inside queue.", clientGroup.getClientGroupId());
+            LOGGER.log(Level.INFO, "Manager #{} put group #{} into inside queue.", managerId,clientGroup.getClientGroupId());
+
         } else {
             hookahLounge.getOutsideWaitingQueue().offer(clientGroup);
             clientGroup.setState(ClientGroupState.WAITING_OUTSIDE);
-            LOGGER.log(Level.INFO, "Manager put group #{} into outside queue.", clientGroup.getClientGroupId());
+            LOGGER.log(Level.INFO, "Manager #{}  put group #{} into outside queue.", managerId, clientGroup.getClientGroupId());
+
         }
+        hookahLounge.releaseManager(this);
     }
 
     public void checkWaitingLines() {
         WaitingQueue insideWaitingQueue = hookahLounge.getInsideWaitingQueue();
         boolean isInsideQueueEmpty = insideWaitingQueue.isEmpty();
+        WaitingQueue outsideWaitingQueue = hookahLounge.getOutsideWaitingQueue();
+        boolean isOutsideQueueEmpty = outsideWaitingQueue.isEmpty();
+        LOGGER.log(Level.DEBUG,"inside {} outside {}", isInsideQueueEmpty, isOutsideQueueEmpty);
         if (!isInsideQueueEmpty) {
             ClientGroup firstInQueueGroup = insideWaitingQueue.poll();
+            LOGGER.log(Level.DEBUG, "Polled group {} inside", firstInQueueGroup);
+            if(!isOutsideQueueEmpty){
+                ClientGroup group = outsideWaitingQueue.poll();
+                LOGGER.log(Level.DEBUG, "Polled group {} outside", group);
+                boolean success = insideWaitingQueue.offer(group);
+                group.setState(ClientGroupState.WAITING_INSIDE);
+                LOGGER.log(Level.INFO, "Manager #{} moved group #{} from outside to inside queue - {}"
+                        , managerId,group.getClientGroupId(), success);
+            }
+            LOGGER.log(Level.INFO, "Manager #{} polls group #{} from inside queue.", managerId,firstInQueueGroup.getClientGroupId());
             serveClientGroup(firstInQueueGroup);
-            LOGGER.log(Level.INFO, "Manager polls group #{} from inside queue.", firstInQueueGroup.getClientGroupId());
+
+        }else {
+            hookahLounge.releaseManager(this);
         }
     }
 }
