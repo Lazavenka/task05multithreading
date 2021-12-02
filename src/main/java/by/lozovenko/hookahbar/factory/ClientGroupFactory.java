@@ -15,7 +15,7 @@ public class ClientGroupFactory {
         List<Client> clients = new ArrayList<>();
         Random random = new Random();
         int clientsNumber = 1 + random.nextInt(7);
-        int relaxTime = 1 + random.nextInt(2);
+        int relaxTime = 100 + random.nextInt(2500);
         int clientGroupId = ClientIdGenerator.generateNewGroupId();
         for (int i = 0; i < clientsNumber; i++){
             clients.add(ClientFactory.generateClient());

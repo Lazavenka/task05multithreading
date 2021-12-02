@@ -73,7 +73,7 @@ public class HookahLounge {
             semaphore.acquire();
             managersLock.lock();
             manager = loungeManagers.poll();
-            LOGGER.log(Level.INFO, "Manager #{} is starting to work.", manager.getManagerId());
+            LOGGER.log(Level.INFO, "Manager #{} is start working.", manager.getManagerId());
         } catch (InterruptedException e) {
             LOGGER.log(Level.ERROR, "InterruptedException in callManager method.", e);
         } finally {
@@ -84,7 +84,7 @@ public class HookahLounge {
     public void releaseManager(LoungeManager manager){ //TODO make something with that
         try {
             managersLock.lock();
-            loungeManagers.addFirst(manager);
+            loungeManagers.addLast(manager);
             LOGGER.log(Level.INFO, "Manager #{} is released.", manager.getManagerId());
         }finally {
             managersLock.unlock();
