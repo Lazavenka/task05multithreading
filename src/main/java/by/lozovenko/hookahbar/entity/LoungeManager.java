@@ -54,21 +54,17 @@ public class LoungeManager {
         boolean isInsideQueueEmpty = insideWaitingQueue.isEmpty();
         WaitingQueue outsideWaitingQueue = hookahLounge.getOutsideWaitingQueue();
         boolean isOutsideQueueEmpty = outsideWaitingQueue.isEmpty();
-        //LOGGER.log(Level.DEBUG, "inside {} outside {}", isInsideQueueEmpty, isOutsideQueueEmpty);
         if (!isInsideQueueEmpty) {
             ClientGroup firstInQueueGroup = insideWaitingQueue.poll();
-            LOGGER.log(Level.DEBUG, "Polled group {} inside", firstInQueueGroup);
+            LOGGER.log(Level.INFO, "Manager #{} polls group #{} from inside queue.", managerId, firstInQueueGroup);
             if (!isOutsideQueueEmpty) {
                 ClientGroup group = outsideWaitingQueue.poll();
-                LOGGER.log(Level.DEBUG, "Polled group {} outside", group);
                 boolean success = insideWaitingQueue.offer(group);
                 group.setState(ClientGroupState.WAITING_INSIDE);
                 LOGGER.log(Level.INFO, "Manager #{} moved group #{} from outside to inside queue - {}"
-                        , managerId, group.getClientGroupId(), success);
+                        , managerId, group, success);
             }
-            LOGGER.log(Level.INFO, "Manager #{} polls group #{} from inside queue.", managerId, firstInQueueGroup.getClientGroupId());
             serveClientGroup(firstInQueueGroup);
-
         } else {
             hookahLounge.releaseManager(this);
         }

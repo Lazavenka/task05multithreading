@@ -7,15 +7,15 @@ import org.apache.logging.log4j.Logger;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Hookah{
+public class Hookah {
     private static final Logger LOGGER = LogManager.getLogger();
     private final int hookahId;
     private AtomicBoolean isBusy;
+
     public Hookah(int hookahId) {
         this.hookahId = hookahId;
         isBusy = new AtomicBoolean(false);
     }
-
 
     public boolean isBusy() {
         return isBusy.get();
@@ -25,22 +25,22 @@ public class Hookah{
         return hookahId;
     }
 
-    public void serveClientGroup(ClientGroup clientGroup, LoungeManager manager){
+    public void serveClientGroup(ClientGroup clientGroup, LoungeManager manager) {
         int relaxTime = clientGroup.getRelaxTime();
         HookahLounge hookahLounge = HookahLounge.getInstance();
         try {
             isBusy.set(true);
             clientGroup.setState(ClientGroupState.SMOKING);
-            LOGGER.log(Level.INFO, "Group #{} served by manager #{} at hookah #{}",
-                    clientGroup.getClientGroupId(), manager.getManagerId(), hookahId );
+            LOGGER.log(Level.INFO, "Group #{} served by manager #{} at hookah #{}.",
+                    clientGroup, manager.getManagerId(), hookahId);
             hookahLounge.releaseManager(manager);
             TimeUnit.MILLISECONDS.sleep(relaxTime);
-        }catch (InterruptedException e){
+        } catch (InterruptedException e) {
             LOGGER.log(Level.ERROR, "Thread interrupt exception while sleeping in serveClientGroup: ", e);
-        }finally {
+        } finally {
             isBusy.set(false);
             clientGroup.setState(ClientGroupState.SERVED);
-            LOGGER.log(Level.INFO, "Group #{} relaxed and leave hookah lounge", clientGroup.getClientGroupId());
+            LOGGER.log(Level.INFO, "Group #{} relaxed and leave hookah lounge.", clientGroup);
 
         }
         hookahLounge.callManager().checkWaitingLines();

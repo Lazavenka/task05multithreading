@@ -1,5 +1,9 @@
 package by.lozovenko.hookahbar.entity;
 
+import by.lozovenko.hookahbar.parser.CustomLoungeInitializer;
+import by.lozovenko.hookahbar.parser.impl.CustomLoungeInitializerImpl;
+import by.lozovenko.hookahbar.reader.CustomFileReader;
+import by.lozovenko.hookahbar.reader.impl.CustomFileReaderImpl;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,67 +17,100 @@ import java.util.concurrent.locks.ReentrantLock;
 public class HookahLounge {
     private static final Logger LOGGER = LogManager.getLogger();
 
+    public static final String INIT_FILEPATH = "data/Loufdnge.ini";
+
+    public static final int INSIDE_WAITING_QUEUE_SIZE;
+    public static final int HOOKAHS_NUMBER;
+    public static final int MANAGERS_NUMBER;
+
     private static HookahLounge instance;
-    public static final int WAITING_QUEUE_SIZE = 10;
-    public static final int HOOKAHS_NUMBER = 5;
-    public static final int MANAGERS_NUMBER = 6;
+
+    private static AtomicBoolean isCreated = new AtomicBoolean(false);
+    private static Lock singletonLock = new ReentrantLock();
+
     private final List<Hookah> hookahs;
     private final Deque<LoungeManager> loungeManagers;
     private final WaitingQueue insideWaitingQueue;
     private final WaitingQueue outsideWaitingQueue;
-
-    private static AtomicBoolean isCreated = new AtomicBoolean(false);
-    private static Lock lock = new ReentrantLock();
     private Lock hookahsLock = new ReentrantLock();
     private Lock managersLock = new ReentrantLock();
+    private Semaphore semaphore = new Semaphore(MANAGERS_NUMBER);
 
-    private Semaphore semaphore = new Semaphore(MANAGERS_NUMBER); // fixme INITIALIZATION!
+    static {
+        CustomFileReader fileReader = new CustomFileReaderImpl();
+        List<String> initData = fileReader.readLinesFromFile(INIT_FILEPATH);
+        CustomLoungeInitializer initializer = new CustomLoungeInitializerImpl();
+        Map<String, Integer> initParameters = initializer.parseInitData(initData);
+        int tempManagersNumber;
+        int tempWaitingQueueSize;
+        int tempHookahsNumber;
+        if (!initParameters.isEmpty()) {
+            tempHookahsNumber = initParameters.get(CustomLoungeInitializerImpl.HOOKAHS_PARAMETER_NAME);
+            tempWaitingQueueSize = initParameters.get(CustomLoungeInitializerImpl.WAITING_QUEUE_PARAMETER_NAME);
+            tempManagersNumber = initParameters.get(CustomLoungeInitializerImpl.MANAGERS_PARAMETER_NAME);
+            LOGGER.log(Level.INFO, "Loaded initialization parameters of HookahLounge class:\n" +
+                    "hookahs={}, insideWaitingQueueSize={}, loungeManagers={}", tempHookahsNumber,
+                    tempWaitingQueueSize, tempManagersNumber);
+        } else {
+            tempHookahsNumber = 5;
+            tempManagersNumber = 4;
+            tempWaitingQueueSize = 10;
+            LOGGER.log(Level.INFO, "INI file not found, preloaded default values:\n" +
+                    "hookahs={}, insideWaitingQueueSize={}, loungeManagers={}", tempHookahsNumber,
+                    tempWaitingQueueSize, tempManagersNumber);
+        }
 
-    private HookahLounge(){
+        MANAGERS_NUMBER = tempManagersNumber;
+        INSIDE_WAITING_QUEUE_SIZE = tempWaitingQueueSize;
+        HOOKAHS_NUMBER = tempHookahsNumber;
+    }
+
+    private HookahLounge() {
         hookahs = new ArrayList<>(HOOKAHS_NUMBER);
         loungeManagers = new ArrayDeque<>(MANAGERS_NUMBER);
-        insideWaitingQueue = new WaitingQueue(WAITING_QUEUE_SIZE);
+        insideWaitingQueue = new WaitingQueue(INSIDE_WAITING_QUEUE_SIZE);
         outsideWaitingQueue = new WaitingQueue();
-        for (int i = 0; i< HOOKAHS_NUMBER; i++) {        //TODO reader and parser for initialization
-            hookahs.add(new Hookah(i+1));
-
+        for (int i = 0; i < HOOKAHS_NUMBER; i++) {
+            hookahs.add(new Hookah(i + 1));
         }
         for (int i = 0; i < MANAGERS_NUMBER; i++) {
-            loungeManagers.add(new LoungeManager(this,i+1));
+            loungeManagers.add(new LoungeManager(this, i + 1));
         }
     }
 
-    public static HookahLounge getInstance(){
-        if (!isCreated.get()){
+    public static HookahLounge getInstance() {
+        if (!isCreated.get()) {
             try {
-                lock.lock();
-                if (instance == null){
+                singletonLock.lock();
+                if (instance == null) {
                     instance = new HookahLounge();
                 }
-            }
-            finally {
-                lock.unlock();
+            } finally {
+                singletonLock.unlock();
             }
         }
         return instance;
     }
-    public Optional<Hookah> getFreeHookah(){
+
+    public Optional<Hookah> getFreeHookah() {
         Optional<Hookah> optionalHookah;
         try {
             hookahsLock.lock();
             optionalHookah = hookahs.stream().filter(h -> !h.isBusy()).findFirst();
-        }finally {
+        } finally {
             hookahsLock.unlock();
         }
         return optionalHookah;
     }
-    public LoungeManager callManager(){
+
+    public LoungeManager callManager() {
         LoungeManager manager = null;
         try {
             semaphore.acquire();
             managersLock.lock();
             manager = loungeManagers.poll();
-            LOGGER.log(Level.INFO, "Manager #{} is start working.", manager.getManagerId());
+            int managerId = manager.getManagerId();
+            LOGGER.log(Level.INFO, "Manager #{} started working.", managerId);
         } catch (InterruptedException e) {
             LOGGER.log(Level.ERROR, "InterruptedException in callManager method.", e);
         } finally {
@@ -81,16 +118,18 @@ public class HookahLounge {
         }
         return manager;
     }
-    public void releaseManager(LoungeManager manager){ //TODO make something with that
+
+    public void releaseManager(LoungeManager manager) {
         try {
             managersLock.lock();
             loungeManagers.addLast(manager);
-            LOGGER.log(Level.INFO, "Manager #{} is released.", manager.getManagerId());
-        }finally {
+            LOGGER.log(Level.INFO, "Manager #{} released.", manager.getManagerId());
+        } finally {
             managersLock.unlock();
         }
         semaphore.release();
     }
+
     public WaitingQueue getInsideWaitingQueue() {
         return insideWaitingQueue;
     }

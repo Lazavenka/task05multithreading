@@ -1,7 +1,6 @@
 package by.lozovenko.hookahbar.entity;
 
 import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.Queue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -11,18 +10,15 @@ public class WaitingQueue {
     private int freePlaces;
     private Queue<ClientGroup> clientGroups;
     private Lock lock = new ReentrantLock();
-    public WaitingQueue(){
-        freePlaces = Integer.MAX_VALUE; //TODO ???
+
+    public WaitingQueue() {
+        freePlaces = Integer.MAX_VALUE;
         clientGroups = new ArrayDeque<>();
     }
+
     public WaitingQueue(int freePlaces) {
         clientGroups = new ArrayDeque<>(freePlaces);
         this.freePlaces = freePlaces;
-    }
-
-    public boolean add(ClientGroup clientGroup) {
-        freePlaces--;
-        return clientGroups.add(clientGroup);
     }
 
     public boolean offer(ClientGroup clientGroup) {
@@ -31,7 +27,7 @@ public class WaitingQueue {
             lock.lock();
             freePlaces--;
             result = clientGroups.offer(clientGroup);
-        }finally {
+        } finally {
             lock.unlock();
         }
         return result;
@@ -43,18 +39,10 @@ public class WaitingQueue {
             lock.lock();
             freePlaces++;
             clientGroup = clientGroups.poll();
-        }finally {
+        } finally {
             lock.unlock();
         }
         return clientGroup;
-    }
-
-    public ClientGroup peek() {
-        return clientGroups.peek();
-    }
-
-    public int size() {
-        return clientGroups.size();
     }
 
     public int getFreePlaces() {
