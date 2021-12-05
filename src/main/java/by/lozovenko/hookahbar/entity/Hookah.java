@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Hookah {
     private static final Logger LOGGER = LogManager.getLogger();
     private final int hookahId;
-    private AtomicBoolean isBusy;
+    private final AtomicBoolean isBusy;
 
     public Hookah(int hookahId) {
         this.hookahId = hookahId;

@@ -36,12 +36,12 @@ public class LoungeManager {
         WaitingQueue insideWaitingQueue = hookahLounge.getInsideWaitingQueue();
         int insideQueueFreePlaces = insideWaitingQueue.getFreePlaces();
         if (insideQueueFreePlaces > 0) {
-            LOGGER.log(Level.INFO, "Manager #{} put group #{} into inside queue.", managerId, clientGroup.getClientGroupId());
+            LOGGER.log(Level.INFO, "Manager #{} put group #{} into inside queue.", this.managerId, clientGroup.getClientGroupId());
             insideWaitingQueue.offer(clientGroup);
             clientGroup.setState(ClientGroupState.WAITING_INSIDE);
 
         } else {
-            LOGGER.log(Level.INFO, "Manager #{}  put group #{} into outside queue.", managerId, clientGroup.getClientGroupId());
+            LOGGER.log(Level.INFO, "Manager #{} put group #{} into outside queue.", this.managerId, clientGroup.getClientGroupId());
             hookahLounge.getOutsideWaitingQueue().offer(clientGroup);
             clientGroup.setState(ClientGroupState.WAITING_OUTSIDE);
         }
@@ -56,13 +56,13 @@ public class LoungeManager {
         boolean isOutsideQueueEmpty = outsideWaitingQueue.isEmpty();
         if (!isInsideQueueEmpty) {
             ClientGroup firstInQueueGroup = insideWaitingQueue.poll();
-            LOGGER.log(Level.INFO, "Manager #{} polls group #{} from inside queue.", managerId, firstInQueueGroup);
+            LOGGER.log(Level.INFO, "Manager #{} polls group #{} from inside queue.", this.managerId, firstInQueueGroup);
             if (!isOutsideQueueEmpty) {
                 ClientGroup group = outsideWaitingQueue.poll();
                 boolean success = insideWaitingQueue.offer(group);
                 group.setState(ClientGroupState.WAITING_INSIDE);
                 LOGGER.log(Level.INFO, "Manager #{} moved group #{} from outside to inside queue - {}"
-                        , managerId, group, success);
+                        , this.managerId, group, success);
             }
             serveClientGroup(firstInQueueGroup);
         } else {

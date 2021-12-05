@@ -11,7 +11,8 @@ import java.util.Random;
 
 
 public class ClientGroupFactory {
-    public static ClientGroup createRandomClientGroup(){ //TODO read from file
+    //for tests
+    public static ClientGroup createRandomClientGroup(){
         List<Client> clients = new ArrayList<>();
         Random random = new Random();
         int clientsNumber = 1 + random.nextInt(7);

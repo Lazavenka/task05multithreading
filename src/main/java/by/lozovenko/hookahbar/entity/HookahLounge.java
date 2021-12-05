@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class HookahLounge {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    public static final String INIT_FILEPATH = "data/Loufdnge.ini";
+    public static final String INIT_FILEPATH = "data/Lounge.ini";
 
     public static final int INSIDE_WAITING_QUEUE_SIZE;
     public static final int HOOKAHS_NUMBER;
@@ -48,15 +48,15 @@ public class HookahLounge {
             tempHookahsNumber = initParameters.get(CustomLoungeInitializerImpl.HOOKAHS_PARAMETER_NAME);
             tempWaitingQueueSize = initParameters.get(CustomLoungeInitializerImpl.WAITING_QUEUE_PARAMETER_NAME);
             tempManagersNumber = initParameters.get(CustomLoungeInitializerImpl.MANAGERS_PARAMETER_NAME);
-            LOGGER.log(Level.INFO, "Loaded initialization parameters of HookahLounge class:\n" +
-                    "hookahs={}, insideWaitingQueueSize={}, loungeManagers={}", tempHookahsNumber,
+            LOGGER.log(Level.INFO, "Loaded initialization parameters for HookahLounge class:\n" +
+                            "hookahs={}, insideWaitingQueueSize={}, loungeManagers={}", tempHookahsNumber,
                     tempWaitingQueueSize, tempManagersNumber);
         } else {
             tempHookahsNumber = 5;
             tempManagersNumber = 4;
             tempWaitingQueueSize = 10;
             LOGGER.log(Level.INFO, "INI file not found, preloaded default values:\n" +
-                    "hookahs={}, insideWaitingQueueSize={}, loungeManagers={}", tempHookahsNumber,
+                            "hookahs={}, insideWaitingQueueSize={}, loungeManagers={}", tempHookahsNumber,
                     tempWaitingQueueSize, tempManagersNumber);
         }
 

@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface CustomClientGroupParser {
     List<ClientGroup> parseClientGroupList(List<String> lines);
+
     ClientGroup parseClientGroup(String line);
 }

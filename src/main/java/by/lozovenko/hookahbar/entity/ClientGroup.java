@@ -4,20 +4,21 @@ import java.util.List;
 
 
 public class ClientGroup implements Runnable {
-    private List<Client> clients;
-
+    private final List<Client> clients;
     private final int clientGroupId;
     private final int relaxTime;
+
     private ClientGroupState state;
 
-    public ClientGroup(List<Client> clients, int clientGroupId, int relaxTime){
+    public ClientGroup(List<Client> clients, int clientGroupId, int relaxTime) {
         this.clients = clients;
-        this.clientGroupId= clientGroupId;
+        this.clientGroupId = clientGroupId;
         this.relaxTime = relaxTime;
         state = ClientGroupState.NEW;
     }
+
     @Override
-    public void run(){
+    public void run() {
         HookahLounge lounge = HookahLounge.getInstance();
         LoungeManager loungeManager = lounge.callManager();
         loungeManager.serveClientGroup(this);
@@ -27,7 +28,7 @@ public class ClientGroup implements Runnable {
         return clientGroupId;
     }
 
-    public int getRelaxTime(){
+    public int getRelaxTime() {
         return relaxTime;
     }
 

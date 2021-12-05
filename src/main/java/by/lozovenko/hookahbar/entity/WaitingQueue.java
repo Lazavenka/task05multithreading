@@ -4,7 +4,6 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 
 public class WaitingQueue {
     private int freePlaces;
@@ -53,7 +52,4 @@ public class WaitingQueue {
         return clientGroups.isEmpty();
     }
 
-    public void forEach(Consumer<? super ClientGroup> action) {
-        clientGroups.forEach(action);
-    }
 }

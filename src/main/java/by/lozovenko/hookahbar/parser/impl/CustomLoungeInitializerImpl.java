@@ -18,7 +18,7 @@ public class CustomLoungeInitializerImpl implements CustomLoungeInitializer {
     @Override
     public Map<String, Integer> parseInitData(List<String> lines) {
         Map<String, Integer> initializationParameters = new HashMap<>();
-        for (String line: lines) {
+        for (String line : lines) {
             String[] parameterSubData = line.split(EQUALS_DELIMITER);
             Integer value = Integer.parseInt(parameterSubData[PARAMETER_VALUE]);
             initializationParameters.put(parameterSubData[PARAMETER_NAME], value);
