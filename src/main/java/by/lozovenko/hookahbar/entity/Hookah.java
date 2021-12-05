@@ -20,7 +20,9 @@ public class Hookah {
     public boolean isBusy() {
         return isBusy.get();
     }
-
+    public void setBusy(){
+        isBusy.set(true);
+    }
     public int getHookahId() {
         return hookahId;
     }
@@ -29,7 +31,6 @@ public class Hookah {
         int relaxTime = clientGroup.getRelaxTime();
         HookahLounge hookahLounge = HookahLounge.getInstance();
         try {
-            isBusy.set(true);
             clientGroup.setState(ClientGroupState.SMOKING);
             LOGGER.log(Level.INFO, "Group #{} served by manager #{} at hookah #{}.",
                     clientGroup, manager.getManagerId(), hookahId);

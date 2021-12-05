@@ -45,24 +45,23 @@ public class HookahLounge {
         int tempWaitingQueueSize;
         int tempHookahsNumber;
         if (!initParameters.isEmpty()) {
-            tempHookahsNumber = initParameters.get(CustomLoungeInitializerImpl.HOOKAHS_PARAMETER_NAME);
             tempWaitingQueueSize = initParameters.get(CustomLoungeInitializerImpl.WAITING_QUEUE_PARAMETER_NAME);
+            tempHookahsNumber = initParameters.get(CustomLoungeInitializerImpl.HOOKAHS_PARAMETER_NAME);
             tempManagersNumber = initParameters.get(CustomLoungeInitializerImpl.MANAGERS_PARAMETER_NAME);
             LOGGER.log(Level.INFO, "Loaded initialization parameters for HookahLounge class:\n" +
-                            "hookahs={}, insideWaitingQueueSize={}, loungeManagers={}", tempHookahsNumber,
-                    tempWaitingQueueSize, tempManagersNumber);
+                            "insideWaitingQueueSize={}, hookahs={}, loungeManagers={}", tempWaitingQueueSize,
+                    tempHookahsNumber, tempManagersNumber);
         } else {
+            tempWaitingQueueSize = 10;
             tempHookahsNumber = 5;
             tempManagersNumber = 4;
-            tempWaitingQueueSize = 10;
             LOGGER.log(Level.INFO, "INI file not found, preloaded default values:\n" +
-                            "hookahs={}, insideWaitingQueueSize={}, loungeManagers={}", tempHookahsNumber,
-                    tempWaitingQueueSize, tempManagersNumber);
+                            "insideWaitingQueueSize={}, hookahs={}, loungeManagers={}", tempWaitingQueueSize,
+                    tempHookahsNumber, tempManagersNumber);
         }
-
+        HOOKAHS_NUMBER = tempHookahsNumber;
         MANAGERS_NUMBER = tempManagersNumber;
         INSIDE_WAITING_QUEUE_SIZE = tempWaitingQueueSize;
-        HOOKAHS_NUMBER = tempHookahsNumber;
     }
 
     private HookahLounge() {
@@ -97,6 +96,7 @@ public class HookahLounge {
         try {
             hookahsLock.lock();
             optionalHookah = hookahs.stream().filter(h -> !h.isBusy()).findFirst();
+            optionalHookah.ifPresent(Hookah::setBusy);
         } finally {
             hookahsLock.unlock();
         }
