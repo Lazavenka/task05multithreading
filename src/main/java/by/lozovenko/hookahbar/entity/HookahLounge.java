@@ -112,7 +112,8 @@ public class HookahLounge {
             int managerId = manager.getManagerId();
             LOGGER.log(Level.INFO, "Manager #{} started working.", managerId);
         } catch (InterruptedException e) {
-            LOGGER.log(Level.ERROR, "InterruptedException in callManager method.", e);
+            LOGGER.log(Level.WARN, "InterruptedException in callManager method.", e);
+            Thread.currentThread().interrupt();
         } finally {
             managersLock.unlock();
         }

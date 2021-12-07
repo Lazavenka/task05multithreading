@@ -38,6 +38,7 @@ public class Hookah {
             TimeUnit.MILLISECONDS.sleep(relaxTime);
         } catch (InterruptedException e) {
             LOGGER.log(Level.ERROR, "Thread interrupt exception while sleeping in serveClientGroup: ", e);
+            Thread.currentThread().interrupt();
         } finally {
             isBusy.set(false);
             clientGroup.setState(ClientGroupState.SERVED);
